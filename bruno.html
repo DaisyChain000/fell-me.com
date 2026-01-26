@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bruno Mars - Artist Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; }
+        .text-primary-accent { color: #00e0ff; } 
+        .bg-primary-accent { background-color: #00e0ff; }
+        .player-bar { backdrop-filter: blur(10px); }
+        .track-row:hover { background-color: rgba(0, 0, 0, 0.03); }
+        .neon-glow { box-shadow: 0 0 5px #00e0ff, 0 0 10px #00e0ff, 0 0 15px rgba(0, 224, 255, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <script>
+        let currentTrackId = null;
+
+        // BRUNO MARS TRACK DATA
+        const trackData = [
+            { id: 'track-1', title: 'Uptown Funk', artist: 'Mark Ronson ft. Bruno Mars', album: 'Uptown Special', duration: '4:30', filename: '/audio/bruno/Uptown Funk.mp3', image: 'https://i.scdn.co/image/ab67616d0000b2736369508349de21f3f97a0ed3' },
+            { id: 'track-2', title: '24K Magic', artist: 'Bruno Mars', album: '24K Magic', duration: '3:46', filename: '/audio/bruno/24K Magic.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273232711f7d66a1e19e89e28c5' },
+            { id: 'track-3', title: 'Just the Way You Are', artist: 'Bruno Mars', album: 'Doo-Wops & Hooligans', duration: '3:40', filename: '/audio/bruno/Just the Way You Are.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273f6b55ca93bd33211227b502b' },
+            { id: 'track-4', title: 'Locked Out of Heaven', artist: 'Bruno Mars', album: 'Unorthodox Jukebox', duration: '3:53', filename: '/audio/bruno/Locked Out of Heaven.mp3', image: 'https://i.scdn.co/image/ab67616d0000b27349055dce3554e72e82082980' },
+            { id: 'track-5', title: 'That\'s What I Like', artist: 'Bruno Mars', album: '24K Magic', duration: '3:26', filename: '/audio/bruno/That\'s What I Like.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273185522533982fce28baace9c' }
+        ];
+
+        const trackDataMap = {};
+        trackData.forEach(track => { trackDataMap[track.id] = track; });
+
+        const mainAudio = document.createElement('audio');
+        mainAudio.id = 'main-audio-player';
+        document.body.appendChild(mainAudio);
+
+        const initialTrack = trackData[0];
+        mainAudio.src = initialTrack.filename;
+        currentTrackId = initialTrack.id;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '0:00';
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function setupAudioListeners() {
+            const audio = document.getElementById('main-audio-player');
+            const currentTimeEl = document.getElementById('mini-player-current-time');
+            const durationEl = document.getElementById('mini-player-duration');
+            const progressFill = document.getElementById('mini-player-progress-fill');
+            const progressScrubber = document.getElementById('mini-player-progress-scrubber');
+
+            audio.addEventListener('loadedmetadata', () => { durationEl.textContent = formatTime(audio.duration); });
+            audio.addEventListener('timeupdate', () => {
+                if (audio.duration > 0) {
+                    const progress = (audio.currentTime / audio.duration) * 100;
+                    currentTimeEl.textContent = formatTime(audio.currentTime);
+                    progressFill.style.width = `${progress}%`;
+                    progressScrubber.style.left = `${progress}%`;
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mini-player-title').textContent = initialTrack.title;
+            document.getElementById('mini-player-artist').textContent = initialTrack.artist;
+            document.getElementById('mini-player-cover').src = initialTrack.image;
+            setupAudioListeners();
+
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeFill = document.getElementById('volume-fill');
+            mainAudio.volume = volumeSlider.value;
+            volumeSlider.oninput = () => {
+                mainAudio.volume = volumeSlider.value;
+                volumeFill.style.width = `${volumeSlider.value * 100}%`;
+            };
+        });
+
+        function toggleAudio(newTrackId) {
+            const audio = document.getElementById('main-audio-player');
+            const newIcon = document.getElementById(newTrackId + '-icon');
+            const newRow = document.getElementById(newTrackId);
+            const newTrackData = trackDataMap[newTrackId];
+
+            if (currentTrackId === newTrackId) {
+                if (audio.paused) { audio.play(); newIcon.innerHTML = '⏸'; document.getElementById('mini-play-icon-symbol').innerHTML = '⏸'; }
+                else { audio.pause(); newIcon.innerHTML = '▶'; document.getElementById('mini-play-icon-symbol').innerHTML = '▶'; }
+            } else {
+                if (currentTrackId) {
+                    const oldIcon = document.getElementById(currentTrackId + '-icon');
+                    const oldRow = document.getElementById(currentTrackId);
+                    if(oldIcon) oldIcon.innerHTML = '▶';
+                    if(oldRow) oldRow.classList.remove('text-primary-accent', 'bg-blue-50/50', 'border', 'border-primary-accent/30');
+                }
+                audio.src = newTrackData.filename; 
+                audio.play();
+                newIcon.innerHTML = '⏸';
+                newRow.classList.add('text-primary-accent', 'bg-blue-50/50', 'border', 'border-primary-accent/30');
+                currentTrackId = newTrackId;
+                document.getElementById('mini-player-title').textContent = newTrackData.title;
+                document.getElementById('mini-player-artist').textContent = newTrackData.artist;
+                document.getElementById('mini-player-cover').src = newTrackData.image;
+                document.getElementById('mini-play-icon-symbol').innerHTML = '⏸';
+            }
+        }
+    </script>
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 pt-10 pb-28">
+        <div class="bg-white rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-start gap-6">
+            <div class="flex-shrink-0">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR50DJ61SCNwtATnN0Ok6PFQuKX91-qsUNSXA&s" alt="Bruno Mars" class="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="flex-grow text-gray-900">
+                <p class="text-sm font-light text-gray-500">Artist</p>
+                <div class="flex items-center mt-1 mb-3">
+                    <h1 class="text-4xl sm:text-6xl font-extrabold leading-tight">Bruno Mars</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" class="w-8 h-8 text-blue-500 ml-2"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                </div>
+                <p class="text-gray-700 italic text-sm mt-2 leading-relaxed">
+                    "I just want to make music and have a good time." - Bruno Mars
+                </p>
+                <div class="flex space-x-4 mt-6 border-b border-gray-300 pb-2">
+                    <button class="text-primary-accent font-semibold border-b-2 border-primary-accent pb-2">Popular</button>
+                    <button class="text-gray-500 hover:text-gray-900 pb-2">Albums</button>
+                    <button class="text-gray-500 hover:text-gray-900 pb-2">About</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 text-gray-500 text-xs uppercase font-medium mt-10 border-b border-gray-300 pb-2 px-4 sticky top-0 bg-white/90 z-10 md:grid-cols-10">
+            <span class="col-span-1">#</span>
+            <span class="col-span-4 md:col-span-3">Title</span>
+            <span class="col-span-4 md:col-span-4">Album</span>
+            <span class="col-span-3 md:col-span-2 text-right">Duration</span>
+        </div>
+
+        <div class="mt-4 space-y-1">
+            <div id="track-1" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm text-gray-500">1</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b2736369508349de21f3f97a0ed3" class="w-10 h-10 rounded-md mr-3">
+                    <button onclick="toggleAudio('track-1')" class="truncate text-base flex items-center space-x-2">
+                        <span id="track-1-icon">▶</span> <p>Uptown Funk</p>
+                    </button>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-500 text-sm">Uptown Special</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm">4:30</span>
+            </div>
+            <div id="track-2" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm text-gray-500">2</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273232711f7d66a1e19e89e28c5" class="w-10 h-10 rounded-md mr-3">
+                    <button onclick="toggleAudio('track-2')" class="truncate text-base flex items-center space-x-2">
+                        <span id="track-2-icon">▶</span> <p>24K Magic</p>
+                    </button>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-sm text-gray-500">24K Magic</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm">3:46</span>
+            </div>
+            <div id="track-3" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm text-gray-500">3</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273f6b55ca93bd33211227b502b" class="w-10 h-10 rounded-md mr-3">
+                    <button onclick="toggleAudio('track-3')" class="truncate text-base flex items-center space-x-2">
+                        <span id="track-3-icon">▶</span> <p>Just the Way You Are</p>
+                    </button>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-sm text-gray-500">Doo-Wops & Hooligans</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm">3:40</span>
+            </div>
+            <div id="track-4" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm text-gray-500">4</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b27349055dce3554e72e82082980" class="w-10 h-10 rounded-md mr-3">
+                    <button onclick="toggleAudio('track-4')" class="truncate text-base flex items-center space-x-2">
+                        <span id="track-4-icon">▶</span> <p>Locked Out of Heaven</p>
+                    </button>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-sm text-gray-500">Unorthodox Jukebox</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm">3:53</span>
+            </div>
+            <div id="track-5" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm text-gray-500">5</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273185522533982fce28baace9c" class="w-10 h-10 rounded-md mr-3">
+                    <button onclick="toggleAudio('track-5')" class="truncate text-base flex items-center space-x-2">
+                        <span id="track-5-icon">▶</span> <p>That's What I Like</p>
+                    </button>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-sm text-gray-500">24K Magic</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm">3:26</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fixed bottom-0 left-0 right-0 h-24 bg-white/90 border-t border-gray-200/50 player-bar z-20 shadow-xl">
+        <div class="max-w-6xl mx-auto h-full flex items-center justify-between px-4">
+            <div class="flex items-center w-1/4 min-w-[150px]">
+                <img id="mini-player-cover" src="" class="w-14 h-14 rounded-lg mr-4 shadow-lg hidden sm:block">
+                <div>
+                    <p id="mini-player-title" class="text-gray-900 font-semibold text-sm truncate"></p>
+                    <p id="mini-player-artist" class="text-gray-500 text-xs"></p>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center w-1/2">
+                <div class="flex items-center space-x-6 text-gray-500 text-2xl mb-1">
+                    <button class="hover:text-gray-900 transition">⏮</button>
+                    <button onclick="toggleAudio(currentTrackId || 'track-1')" class="text-gray-900 hover:scale-105 transition-transform">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" class="text-primary-accent bg-gray-200 rounded-full p-2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <text id="mini-play-icon-symbol" x="12" y="15" text-anchor="middle" font-size="10" fill="#1f1f1f" style="font-weight: 900;">▶</text>
+                        </svg>
+                    </button>
+                    <button class="hover:text-gray-900 transition">⏭</button>
+                </div>
+                <div class="flex items-center w-full max-w-lg space-x-3 text-xs text-gray-500">
+                    <span id="mini-player-current-time">0:00</span>
+                    <div class="flex-grow h-1 bg-gray-300 rounded-full relative">
+                        <div id="mini-player-progress-fill" class="h-1 bg-primary-accent rounded-full neon-glow" style="width: 0%;"></div>
+                        <div id="mini-player-progress-scrubber" class="w-3 h-3 bg-primary-accent rounded-full absolute -top-1.5" style="left: 0%;"></div>
+                    </div>
+                    <span id="mini-player-duration">0:00</span>
+                </div>
+            </div>
+
+            <div class="hidden sm:flex items-center space-x-4 text-gray-500 w-1/4 justify-end">
+                <span>🔊</span>
+                <div class="w-24 h-2 bg-gray-900 rounded-md relative overflow-hidden">
+                    <div id="volume-fill" class="h-2 bg-primary-accent" style="width: 100%;"></div>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="absolute inset-0 w-full opacity-0 cursor-pointer" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

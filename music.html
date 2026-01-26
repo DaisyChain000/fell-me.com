@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamWave - Music Dashboard</title>
+    <!-- Load Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font family -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --primary-color: #ff5500; /* SoundCloud Orange */
+            --dark-bg: #1f1f1f;
+            --mid-bg: #2a2a2a;
+            --text-light: #cccccc;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            /* Adjusted padding for smaller screens */
+            padding-top: 56px; 
+            padding-bottom: 56px; 
+        }
+        /* Custom scrollbar hiding for horizontal lists */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            /* Added smooth scrolling for a better UX */
+            scroll-behavior: smooth;
+        }
+        /* Custom Orange Text */
+        .text-orange-primary {
+            color: var(--primary-color);
+        }
+        /* Ensure the scrubber is always positioned absolutely relative to the container */
+        #progress-container {
+            position: relative;
+        }
+    </style>
+    <script>
+        // Tailwind configuration to use CSS variables
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-orange': 'var(--primary-color)',
+                        'dark-bg': 'var(--dark-bg)',
+                        'mid-bg': 'var(--mid-bg)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased">
+
+    <!-- 1. Fixed Header/Navigation Bar (Top of the screen) -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-mid-bg shadow-lg border-b border-gray-700/50">
+        <div class="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <!-- Logo and Main Links (Left Side) -->
+            <div class="flex items-center space-x-6">
+                <!-- Logo -->
+                <a href="#" class="flex items-center text-xl font-bold text-primary-orange">
+                    <svg class="w-6 h-6 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15.5V6.5l7 5.5-7 5.5z"/>
+                    </svg>
+                    RingWoffle
+                </a>
+                <!-- Navigation links -->
+                <nav class="hidden sm:flex space-x-4 text-sm text-white">
+                    <a href="#" class="hover:text-primary-orange transition font-semibold text-primary-orange">Home</a>
+                    <a href="#" class="hover:text-primary-orange transition">Stream</a>
+                    <a href="#" class="hover:text-primary-orange transition">Library</a>
+                </nav>
+            </div>
+
+            <!-- Search Bar, Actions, and Profile (Right Side) -->
+            <div class="flex items-center space-x-4">
+                <!-- Search Bar (Desktop only) -->
+                <div class="relative hidden lg:block">
+                    <input type="search" placeholder="Search..." class="w-64 px-4 py-1.5 text-sm bg-dark-bg border border-gray-700 rounded-full focus:outline-none focus:ring-1 focus:ring-primary-orange text-gray-200 transition">
+                    <button class="absolute right-0 top-0 mt-1.5 mr-3 text-gray-400 hover:text-primary-orange">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="hidden sm:flex items-center space-x-2 text-sm">
+                    <button class="px-3 py-1 text-xs font-semibold rounded-full bg-mid-bg border border-gray-600 hover:bg-gray-700 transition text-gray-200">Upload</button>
+                    <button class="px-3 py-1 text-xs font-bold rounded-full text-white bg-primary-orange hover:bg-red-600 transition shadow-lg shadow-primary-orange/30">Try Pro</button>
+                </div>
+                
+                <!-- Profile and Menu Icons -->
+                <div class="flex items-center space-x-2 text-sm">
+                    <img src="https://placehold.co/32x32/1d1d1d/ffffff?text=U" class="w-8 h-8 rounded-full border-2 border-primary-orange cursor-pointer hover:opacity-80 transition" alt="User Avatar">
+                    <!-- Notification/Settings Icon -->
+                    <button class="text-gray-400 hover:text-white transition hidden sm:block">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                    <!-- More Menu Icon -->
+                    <button class="text-gray-400 hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout (Content + Sidebar) -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- 2. Main Content (Left Column - Takes 3/4 width on large screens) -->
+            <div class="flex-grow lg:w-3/4">
+
+                <!-- New Music Section -->
+                <section class="mb-10">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-1">New Music Now</h2>
+                    <p class="text-xs sm:text-sm text-gray-400 mb-4">The latest hits, updated all the time</p>
+                    
+                    <!-- Horizontal Scroll Container -->
+                    <div class="flex space-x-4 overflow-x-scroll scrollbar-hide pb-4">
+                        <!-- Card 1: DRIPPIN (Orange) -->
+                       
+                                <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                                    <a href="/weekend" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                        <div class="w-full h-36 sm:h-44"> <img 
+                                                src="https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452"
+                                                onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                                alt="Album Cover"
+                                                 class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]" 
+                                                >
+                                        </div> 
+                                        <div class="mt-2 text-sm text-center">
+                                            <p class="font-semibold truncate text-white">Weekend</p>
+                                            <p class="text-xs text-primary-orange">Hustle</p>
+                                        </div>
+                                    </a>
+                                </div>
+                                
+
+                       
+                        <!-- Card 2: EAR CANDY (Blue/Yellow) -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/jb" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                               <div  class="w-full h-36 sm:h-44">
+                                    <img 
+                                    src="https://i.scdn.co/image/ab6761610000e5ebaf20f7db5288bce9beede034"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                     class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+                                </div> 
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Justin Bieber</p>
+                                    <p class="text-xs text-primary-orange">Believe</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+
+
+                        <!-- Card 3: VIBES (Pink/Purple) -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/eminem" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                               <div  class="w-full h-36 sm:h-44">
+                                    <img 
+                                    src="https://i.scdn.co/image/ab67616d00001e026bf50bce76d3437f1b0e1589"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+                                </div> 
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Eminem</p>
+                                    <p class="text-xs text-primary-orange">Not Afraid</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                        <!-- Card 4: ON THE UP (Yellow/Red) -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/Travis" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                <div  class="w-full h-36 sm:h-44">
+                                    <img 
+                                    src="https://i.scdn.co/image/ab67616d00001e02d3b5affd8824b4ed301b7137"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+                                </div> 
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Travis Scott</p>
+                                    <p class="text-xs text-primary-orange">Shine</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                        <!-- Card 5: FRESH (Black/White) -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/bruno" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                <div  class="w-full h-36 sm:h-44">
+                                    <img 
+                                    src="https://i.scdn.co/image/ab67616d00001e02c118a80baf133e3304efcfe4"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+                                </div>
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Bruno Mars</p>
+                                    <p class="text-xs text-primary-orange">Shine</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                        <!-- Card 6: WAVE (Blue) -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/taylor" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                <div  class="w-full h-36 sm:h-44">
+                                    <img 
+                                    src="https://i.scdn.co/image/ab67616d0000b273da5d5aeeabacacc1263c0f4b"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+                                </div>
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Taylor Swift</p>
+                                    <p class="text-xs text-primary-orange">Shine</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                    </div>
+                </section>
+
+                <!-- Top Playlists Section -->
+                <section class="mb-10">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-1">Top Playlists</h2>
+                    <p class="text-xs sm:text-sm text-gray-400 mb-4">The biggest hits on StreamWave</p>
+                    
+                    <!-- Horizontal Scroll Container -->
+                    <div class="flex space-x-4 overflow-x-scroll scrollbar-hide pb-4">
+                        <!-- Playlist Card 1: ELECTRIFY -->
+
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/best" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da846106537c5cd9a2887e5a4ecf"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">The Best HipHop</p>
+                                    <p class="text-xs text-primary-orange">Daisy</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                        <!-- Playlist Card 2: LOVE HURTS -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/pop" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84570c546eda6d2d9fa00bddfb"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">The Best Pop Songs</p>
+                                    <p class="text-xs text-primary-orange">DaisyChain</p>
+                                </div>
+                                
+                            </a> </div>
+
+                            
+                        <!-- Playlist Card 3: CHILL TRAP -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/rock" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84c34e9a578071c7f99a8aa8da"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Top Rock Anthems</p>
+                                    <p class="text-xs text-primary-orange">DaisyChain</p>
+                                </div>
+                                
+                            </a> </div>
+                        
+                         <!-- Playlist Card 4: POURIN' -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/rnb" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://i.scdn.co/image/ab67616d00001e0272f47b97bfa2148f688c5c51"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">R & B Classics</p>
+                                    <p class="text-xs text-primary-orange">DaisyChain</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                        <!-- Playlist Card 5: STARTED -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/jazz" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://mosaic.scdn.co/640/ab67616d00001e0250f61781ddeb3a6df19ebea7ab67616d00001e027d3c3b0facba1cce2d343288ab67616d00001e02bdd450fd48fcd0968178f8c6ab67616d00001e02f38d64bfe86e318b351bfb19"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Jazz Vibes</p>
+                                    <p class="text-xs text-primary-orange">daisychain</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                         <!-- Playlist Card 6: NATURE -->
+                        <div class="flex-shrink-0 w-36 sm:w-44 group cursor-pointer">
+                            <a href="/jp" class="flex flex-col items-center text-xl font-bold text-primary-orange">
+                                
+                                <img 
+                                    src="https://i.scdn.co/image/ab67616d0000b273ea5b28d60cb8703828cd3403"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/176x176/ff5500/ffffff?text=DRIPPIN';"
+                                    alt="Album Cover"
+                                    class="w-full h-auto rounded-lg shadow-xl transition-transform group-hover:scale-[1.02]"
+                                >
+
+                                <div class="mt-2 text-sm text-center">
+                                    <p class="font-semibold truncate text-white">Japanese Classics</p>
+                                    <p class="text-xs text-primary-orange">DaisyChain</p>
+                                </div>
+                                
+                            </a> </div>
+
+
+                    </div>
+                </section>
+
+                 <!-- Future Sounds Section -->
+                <section class="mb-10">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-1">Future Sounds</h2>
+                    <p class="text-xs sm:text-sm text-gray-400 mb-4">Discover tomorrow's music today</p>
+                    <!-- Placeholder content or more rows would go here -->
+                </section>
+
+            </div>
+
+            <!-- 3. Sidebar (Right Column - Takes 1/4 width on large screens) -->
+
+        </div>
+    </main>
+
+    <!-- 4. Fixed Audio Player Footer (Bottom of the screen) -->
+    <footer class="fixed bottom-0 left-0 right-0 z-50 bg-mid-bg border-t border-gray-700/50 shadow-lg">
+        <div class="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <!-- Audio Controls -->
+            <div class="flex items-center space-x-6">
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eminem - Artist Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: white;
+        }
+        .text-primary-accent { color: #00e0ff; } 
+        .bg-primary-accent { background-color: #00e0ff; }
+        .player-bar { backdrop-filter: blur(15px); background-color: rgba(10, 10, 10, 0.85); }
+        .track-row:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .neon-glow {
+            box-shadow: 0 0 5px #00e0ff, 0 0 10px #00e0ff, 0 0 15px rgba(0, 224, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <script>
+let currentTrackId = null;
+
+const trackData = [
+    { id: 'track-1', title: 'Lose Yourself', artist: 'Eminem', album: '8 Mile', duration: '5:26', filename: '/audio/eminem/Lose Yourself.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273968da85f248a7e7747767801' },
+    { id: 'track-2', title: 'Without Me', artist: 'Eminem', album: 'The Eminem Show', duration: '4:50', filename: '/audio/eminem/Without Me.mp3', image: 'https://i.scdn.co/image/ab67616d0000b2736ca5c90113b30c3c43ffb8f4' },
+    { id: 'track-3', title: 'Stan', artist: 'Eminem', album: 'The Marshall Mathers LP', duration: '6:44', filename: '/audio/eminem/Stan.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273660b251d25d51665990552ec' },
+    { id: 'track-4', title: 'Godzilla (feat. Juice WRLD)', artist: 'Eminem', album: 'Music To Be Murdered By', duration: '3:30', filename: '/audio/eminem/Godzilla.mp3', image: 'https://i.scdn.co/image/ab67616d0000b2732f44aec83b20e40f3baef73c' },
+    { id: 'track-5', title: 'Mockingbird', artist: 'Eminem', album: 'Encore', duration: '4:10', filename: '/audio/eminem/Mockingbird.mp3', image: 'https://i.scdn.co/image/ab67616d0000b2731303ee5b2e9a7a294efa35da' }
+];
+
+const trackDataMap = {};
+trackData.forEach(track => { trackDataMap[track.id] = track; });
+
+const mainAudio = document.createElement('audio');
+mainAudio.id = 'main-audio-player';
+document.body.appendChild(mainAudio);
+
+const initialTrack = trackData[0];
+mainAudio.src = initialTrack.filename;
+currentTrackId = initialTrack.id;
+
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+function setupAudioListeners() {
+    const audio = document.getElementById('main-audio-player');
+    const currentTimeEl = document.getElementById('mini-player-current-time');
+    const durationEl = document.getElementById('mini-player-duration');
+    const progressFill = document.getElementById('mini-player-progress-fill');
+    const progressScrubber = document.getElementById('mini-player-progress-scrubber');
+
+    audio.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        const currentTime = audio.currentTime;
+        const duration = audio.duration;
+        if (duration > 0) {
+            const progress = (currentTime / duration) * 100;
+            currentTimeEl.textContent = formatTime(currentTime);
+            progressFill.style.width = `${progress}%`;
+            progressScrubber.style.left = `${progress}%`;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('mini-player-title').textContent = initialTrack.title;
+    document.getElementById('mini-player-artist').textContent = initialTrack.artist;
+    document.getElementById('mini-player-cover').src = initialTrack.image;
+    document.getElementById('mini-player-duration').textContent = initialTrack.duration;
+
+    setupAudioListeners();
+
+    const audio = document.getElementById('main-audio-player');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeFill = document.getElementById('volume-fill');
+    
+    if (volumeSlider && volumeFill && audio) {
+        audio.volume = volumeSlider.value;
+        volumeSlider.oninput = () => {
+            const volume = volumeSlider.value;
+            audio.volume = volume;
+            volumeFill.style.width = `${volume * 100}%`;
+        };
+    }
+});
+
+function toggleAudio(newTrackId) {
+    const audio = document.getElementById('main-audio-player');
+    const newIcon = document.getElementById(newTrackId + '-icon');
+    const newRow = document.getElementById(newTrackId);
+    const newTrackData = trackDataMap[newTrackId];
+
+    if (currentTrackId === newTrackId) {
+        if (audio.paused) {
+            audio.play();
+            newIcon.innerHTML = '⏸';
+            document.getElementById('mini-play-icon-symbol').innerHTML = '⏸';
+        } else {
+            audio.pause();
+            newIcon.innerHTML = '▶';
+            document.getElementById('mini-play-icon-symbol').innerHTML = '▶';
+        }
+    } else {
+        if (currentTrackId) {
+            const oldIcon = document.getElementById(currentTrackId + '-icon');
+            const oldRow = document.getElementById(currentTrackId);
+            if(oldIcon) oldIcon.innerHTML = '▶';
+            if(oldRow) oldRow.classList.remove('text-primary-accent', 'bg-white/10');
+        }
+
+        audio.src = newTrackData.filename; 
+        audio.load();
+        audio.play();
+
+        newIcon.innerHTML = '⏸';
+        newRow.classList.add('text-primary-accent', 'bg-white/10');
+        currentTrackId = newTrackId;
+        
+        document.getElementById('mini-player-title').textContent = newTrackData.title;
+        document.getElementById('mini-player-artist').textContent = newTrackData.artist;
+        document.getElementById('mini-player-cover').src = newTrackData.image;
+        document.getElementById('mini-play-icon-symbol').innerHTML = '⏸';
+        
+        document.getElementById('mini-player-current-time').textContent = '0:00';
+        document.getElementById('mini-player-progress-fill').style.width = '0%';
+        document.getElementById('mini-player-progress-scrubber').style.left = '0%';
+    }
+}
+    </script>
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 pt-10 pb-28">
+        <div class="bg-zinc-900/50 rounded-xl p-6 flex flex-col md:flex-row items-start gap-6 border border-zinc-800 backdrop-blur-md">
+            <div class="flex-shrink-0">
+                <img src="https://i.scdn.co/image/ab67616d0000b273968da85f248a7e7747767801" class="w-48 h-48 rounded-xl shadow-lg border-2 border-primary-accent/30">
+            </div>
+            <div class="flex-grow">
+                <p class="text-xs font-bold tracking-widest text-gray-500 uppercase">Rap Legend</p>
+                <h1 class="text-5xl sm:text-7xl font-black uppercase italic tracking-tighter">Eminem</h1>
+                <p class="text-gray-400 italic text-sm mt-2 max-w-2xl leading-relaxed">"Look, if you had one shot, or one opportunity to seize everything you ever wanted..."</p>
+                <div class="flex space-x-6 mt-6 border-b border-zinc-800 pb-2">
+                    <button class="text-primary-accent font-bold border-b-2 border-primary-accent pb-2">Top Tracks</button>
+                    <button class="text-gray-500 hover:text-white transition pb-2">Discography</button>
+                </div>
+            </div>
+            <button class="px-8 py-2 bg-primary-accent text-black rounded-sm font-black uppercase hover:bg-white transition neon-glow">Follow</button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 text-zinc-600 text-xs font-black mt-10 border-b border-zinc-800 pb-2 px-4 sticky top-0 bg-black/90 z-10 md:grid-cols-10">
+            <span class="col-span-1">#</span>
+            <span class="col-span-4 md:col-span-3">Title</span>
+            <span class="col-span-4 md:col-span-4">Album</span>
+            <span class="col-span-3 md:col-span-2 text-right">Time</span>
+        </div>
+
+        <div class="mt-4 space-y-1">
+            <div id="track-1" onclick="toggleAudio('track-1')" class="track-row grid grid-cols-12 gap-4 items-center py-3 px-4 rounded-md transition cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm font-bold text-zinc-700">1</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273968da85f248a7e7747767801" class="w-10 h-10 rounded-sm mr-4">
+                    <p class="text-base font-bold truncate"><span id="track-1-icon" class="text-xs">▶</span> Lose Yourself</p>
+                </div>
+                <span class="col-span-4 md:col-span-4 text-zinc-500 text-sm">8 Mile</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-zinc-500 font-mono">5:26</span>
+            </div>
+
+            <div id="track-2" onclick="toggleAudio('track-2')" class="track-row grid grid-cols-12 gap-4 items-center py-3 px-4 rounded-md transition cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm font-bold text-zinc-700">2</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b2736ca5c90113b30c3c43ffb8f4" class="w-10 h-10 rounded-sm mr-4">
+                    <p class="text-base font-bold truncate"><span id="track-2-icon" class="text-xs">▶</span> Without Me</p>
+                </div>
+                <span class="col-span-4 md:col-span-4 text-zinc-500 text-sm">The Eminem Show</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-zinc-500 font-mono">4:50</span>
+            </div>
+
+            <div id="track-3" onclick="toggleAudio('track-3')" class="track-row grid grid-cols-12 gap-4 items-center py-3 px-4 rounded-md transition cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm font-bold text-zinc-700">3</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b273660b251d25d51665990552ec" class="w-10 h-10 rounded-sm mr-4">
+                    <p class="text-base font-bold truncate"><span id="track-3-icon" class="text-xs">▶</span> Stan</p>
+                </div>
+                <span class="col-span-4 md:col-span-4 text-zinc-500 text-sm">The Marshall Mathers LP</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-zinc-500 font-mono">6:44</span>
+            </div>
+
+            <div id="track-4" onclick="toggleAudio('track-4')" class="track-row grid grid-cols-12 gap-4 items-center py-3 px-4 rounded-md transition cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm font-bold text-zinc-700">4</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b2732f44aec83b20e40f3baef73c" class="w-10 h-10 rounded-sm mr-4">
+                    <p class="text-base font-bold truncate"><span id="track-4-icon" class="text-xs">▶</span> Godzilla (feat. Juice WRLD)</p>
+                </div>
+                <span class="col-span-4 md:col-span-4 text-zinc-500 text-sm">Music To Be Murdered By</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-zinc-500 font-mono">3:30</span>
+            </div>
+
+            <div id="track-5" onclick="toggleAudio('track-5')" class="track-row grid grid-cols-12 gap-4 items-center py-3 px-4 rounded-md transition cursor-pointer md:grid-cols-10">
+                <span class="col-span-1 text-sm font-bold text-zinc-700">5</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b2731303ee5b2e9a7a294efa35da" class="w-10 h-10 rounded-sm mr-4">
+                    <p class="text-base font-bold truncate"><span id="track-5-icon" class="text-xs">▶</span> Mockingbird</p>
+                </div>
+                <span class="col-span-4 md:col-span-4 text-zinc-500 text-sm">Encore</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-zinc-500 font-mono">4:10</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fixed bottom-0 left-0 right-0 h-24 player-bar z-20 shadow-2xl border-t border-zinc-900 px-4">
+        <div class="max-w-6xl mx-auto h-full flex items-center justify-between">
+            <div class="flex items-center w-1/4">
+                <img id="mini-player-cover" src="https://i.scdn.co/image/ab67616d0000b273b6ef2ebabdc53d9e04768341" class="w-14 h-14 rounded-sm mr-4 neon-glow">
+                <div class="truncate">
+                    <p id="mini-player-title" class="text-white font-black text-sm uppercase italic">Lose Yourself</p>
+                    <p id="mini-player-artist" class="text-zinc-500 text-xs font-bold">Eminem</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center w-1/2">
+                <div class="flex items-center space-x-8 text-zinc-500 mb-1">
+                    <button id="mini-play-button" onclick="toggleAudio(currentTrackId || 'track-1')" class="text-white hover:scale-110 transition">
+                        <div class="bg-primary-accent rounded-full p-2 neon-glow">
+                             <span id="mini-play-icon-symbol" class="text-black text-lg block leading-none font-black">▶</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="flex items-center w-full max-w-lg space-x-3 text-xs text-zinc-500 font-mono">
+                    <span id="mini-player-current-time">0:00</span>
+                    <div class="flex-grow h-1 bg-zinc-800 rounded-full relative">
+                        <div id="mini-player-progress-fill" class="h-1 bg-primary-accent rounded-full neon-glow" style="width: 0%;"></div>
+                        <div id="mini-player-progress-scrubber" class="w-3 h-3 bg-primary-accent rounded-full absolute -top-1.5 neon-glow" style="left: 0%; transform: translateX(-50%);"></div>
+                    </div>
+                    <span id="mini-player-duration">5:26</span>
+                </div>
+            </div>
+            <div class="hidden sm:flex items-center space-x-4 text-zinc-500 w-1/4 justify-end">
+                <div class="w-24 h-1.5 bg-zinc-900 rounded-full relative border border-zinc-800">
+                    <div id="volume-fill" class="h-full bg-primary-accent rounded-full neon-glow" style="width: 100%;"></div>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="absolute inset-0 w-full opacity-0 cursor-pointer">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

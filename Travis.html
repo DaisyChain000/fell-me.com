@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travis Scott - Artist Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+        }
+        .text-primary-accent { color: #ff3e3e; } 
+        .bg-primary-accent { background-color: #ff3e3e; }
+        .player-bar { backdrop-filter: blur(15px); background-color: rgba(20, 20, 20, 0.9); border-top: 1px solid #222; }
+        .track-row:hover { background-color: rgba(255, 62, 62, 0.05); }
+        .neon-glow {
+            box-shadow: 0 0 5px #ff3e3e, 0 0 10px rgba(255, 62, 62, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <script>
+        let currentTrackId = null;
+
+        const trackData = [
+            { id: 'track-1', title: 'SICKO MODE', artist: 'Travis Scott', album: 'ASTROWORLD', duration: '5:12', filename: '/audio/travis/SICKO MODE.mp3', image: 'https://i.scdn.co/image/ab67616d00001e02d3b5affd8824b4ed301b7137' },
+            { id: 'track-2', title: 'FE!N (feat. Playboi Carti)', artist: 'Travis Scott', album: 'UTOPIA', duration: '3:11', filename: '/audio/travis/FE!N.mp3', image: 'https://i.scdn.co/image/ab67616d00001e02fc2f5445ed8c7d0558b6acef' },
+            { id: 'track-3', title: 'Goosebumps', artist: 'Travis Scott', album: 'Birds In The Trap...', duration: '4:03', filename: '/audio/travis/Goosebumps.mp3', image: 'https://i.scdn.co/image/ab67616d0000b2738752a7355996e64709247c53' },
+            { id: 'track-4', title: 'HIGHEST IN THE ROOM', artist: 'Travis Scott', album: 'Single', duration: '2:55', filename: '/audio/travis/HIGHEST IN THE ROOM.mp3', image: 'https://i.scdn.co/image/ab67616d00001e02cacfc00374a970b2cc21b287' },
+            { id: 'track-5', title: 'MY EYES', artist: 'Travis Scott', album: 'UTOPIA', duration: '4:11', filename: '/audio/travis/MY EYES.mp3', image: 'https://i.scdn.co/image/ab67616d0000b273881d4753733ef0c3f59e663a' }
+        ];
+
+        const trackDataMap = {};
+        trackData.forEach(track => { trackDataMap[track.id] = track; });
+
+        const mainAudio = document.createElement('audio');
+        mainAudio.id = 'main-audio-player';
+        document.body.appendChild(mainAudio);
+
+        const initialTrack = trackData[0];
+        mainAudio.src = initialTrack.filename;
+        currentTrackId = initialTrack.id;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return '0:00';
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function setupAudioListeners() {
+            const audio = document.getElementById('main-audio-player');
+            const currentTimeEl = document.getElementById('mini-player-current-time');
+            const durationEl = document.getElementById('mini-player-duration');
+            const progressFill = document.getElementById('mini-player-progress-fill');
+            const progressScrubber = document.getElementById('mini-player-progress-scrubber');
+
+            audio.addEventListener('loadedmetadata', () => { durationEl.textContent = formatTime(audio.duration); });
+            audio.addEventListener('timeupdate', () => {
+                const duration = audio.duration;
+                if (duration > 0) {
+                    const progress = (audio.currentTime / duration) * 100;
+                    currentTimeEl.textContent = formatTime(audio.currentTime);
+                    progressFill.style.width = `${progress}%`;
+                    progressScrubber.style.left = `${progress}%`;
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mini-player-title').textContent = initialTrack.title;
+            document.getElementById('mini-player-artist').textContent = initialTrack.artist;
+            document.getElementById('mini-player-cover').src = initialTrack.image;
+            document.getElementById('mini-player-duration').textContent = initialTrack.duration;
+            setupAudioListeners();
+
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeFill = document.getElementById('volume-fill');
+            mainAudio.volume = volumeSlider.value;
+            volumeSlider.oninput = () => {
+                mainAudio.volume = volumeSlider.value;
+                volumeFill.style.width = `${volumeSlider.value * 100}%`;
+            };
+        });
+
+        function toggleAudio(newTrackId) {
+            const audio = document.getElementById('main-audio-player');
+            const newIcon = document.getElementById(newTrackId + '-icon');
+            const newRow = document.getElementById(newTrackId);
+            const newTrackData = trackDataMap[newTrackId];
+
+            if (currentTrackId === newTrackId) {
+                if (audio.paused) { 
+                    audio.play(); newIcon.innerHTML = '⏸'; document.getElementById('mini-play-icon-symbol').innerHTML = '⏸'; 
+                } else { 
+                    audio.pause(); newIcon.innerHTML = '▶'; document.getElementById('mini-play-icon-symbol').innerHTML = '▶'; 
+                }
+            } else {
+                if (currentTrackId) {
+                    const oldIcon = document.getElementById(currentTrackId + '-icon');
+                    const oldRow = document.getElementById(currentTrackId);
+                    if(oldIcon) oldIcon.innerHTML = '▶';
+                    if(oldRow) {
+                        oldRow.classList.remove('text-primary-accent', 'bg-red-900/20', 'border', 'border-primary-accent/30');
+                        oldRow.classList.add('text-white');
+                    }
+                }
+                audio.src = newTrackData.filename; 
+                audio.load();
+                audio.play();
+                newIcon.innerHTML = '⏸';
+                newRow.classList.add('text-primary-accent', 'bg-red-900/20', 'border', 'border-primary-accent/30');
+                newRow.classList.remove('text-white');
+                currentTrackId = newTrackId;
+                document.getElementById('mini-player-title').textContent = newTrackData.title;
+                document.getElementById('mini-player-artist').textContent = newTrackData.artist;
+                document.getElementById('mini-player-cover').src = newTrackData.image;
+                document.getElementById('mini-play-icon-symbol').innerHTML = '⏸';
+            }
+        }
+    </script>
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 pt-10 pb-28">
+        <div class="bg-[#1a1a1a] rounded-xl shadow-2xl p-6 flex flex-col md:flex-row items-start gap-6 border border-white/5">
+            <div class="flex-shrink-0">
+                <img src="https://i.scdn.co/image/ab67616d00001e02d3b5affd8824b4ed301b7137" class="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-xl shadow-lg">
+            </div>
+            <div class="flex-grow">
+                <p class="text-sm font-light text-gray-400">Verified Artist</p>
+                <div class="flex items-center mt-1 mb-3">
+                    <h1 class="text-4xl sm:text-6xl font-black italic uppercase tracking-tighter">Travis Scott</h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" class="w-8 h-8 text-blue-400 ml-2"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                </div>
+                <p class="text-gray-400 italic text-sm mt-2 leading-relaxed">"Anything can happen at the night show. It's not just music, it's a feeling." — La Flame</p>
+                <div class="flex space-x-4 mt-6 border-b border-white/10 pb-2">
+                    <button class="text-primary-accent font-semibold border-b-2 border-primary-accent pb-2">Popular</button>
+                    <button class="text-gray-500 hover:text-white pb-2 transition duration-150">Discography</button>
+                    <button class="text-gray-500 hover:text-white pb-2 transition duration-150">Events</button>
+                </div>
+            </div>
+            <button class="flex-shrink-0 px-6 py-2 bg-primary-accent text-white rounded-full font-bold hover:scale-105 transition-transform self-start mt-2 md:mt-0 shadow-lg">FOLLOW</button>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 text-gray-500 text-xs uppercase font-bold mt-10 border-b border-white/10 pb-2 px-4 sticky top-0 bg-[#0f0f0f]/90 z-10 md:grid-cols-10">
+            <span class="col-span-1">#</span>
+            <span class="col-span-4 md:col-span-3">Title</span>
+            <span class="col-span-4 md:col-span-4">Album</span>
+            <span class="col-span-3 md:col-span-2 text-right">Duration</span>
+        </div>
+
+        <div class="mt-4 space-y-1">
+            <div id="track-1" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg transition-colors cursor-pointer md:grid-cols-10" onclick="toggleAudio('track-1')">
+                <span class="col-span-1 text-sm font-medium text-gray-500">1</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d00001e02d3b5affd8824b4ed301b7137" class="w-10 h-10 rounded-md mr-3">
+                    <div class="truncate text-base font-bold flex items-center space-x-2">
+                        <span id="track-1-icon" class="text-xs">▶</span> <p>SICKO MODE</p>
+                    </div>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-400 text-sm">ASTROWORLD</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-gray-400">5:12</span>
+            </div>
+
+            <div id="track-2" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg transition-colors cursor-pointer md:grid-cols-10" onclick="toggleAudio('track-2')">
+                <span class="col-span-1 text-sm font-medium text-gray-500">2</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d00001e02fc2f5445ed8c7d0558b6acef" class="w-10 h-10 rounded-md mr-3">
+                    <div class="truncate text-base font-bold flex items-center space-x-2">
+                        <span id="track-2-icon" class="text-xs">▶</span> <p>FE!N</p>
+                    </div>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-400 text-sm">UTOPIA</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-gray-400">3:11</span>
+            </div>
+
+            <div id="track-3" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg transition-colors cursor-pointer md:grid-cols-10" onclick="toggleAudio('track-3')">
+                <span class="col-span-1 text-sm font-medium text-gray-500">3</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d0000b2738752a7355996e64709247c53" class="w-10 h-10 rounded-md mr-3">
+                    <div class="truncate text-base font-bold flex items-center space-x-2">
+                        <span id="track-3-icon" class="text-xs">▶</span> <p>Goosebumps</p>
+                    </div>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-400 text-sm">Birds In The Trap...</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-gray-400">4:03</span>
+            </div>
+
+            <div id="track-4" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg transition-colors cursor-pointer md:grid-cols-10" onclick="toggleAudio('track-4')">
+                <span class="col-span-1 text-sm font-medium text-gray-500">4</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://i.scdn.co/image/ab67616d00001e02cacfc00374a970b2cc21b287" class="w-10 h-10 rounded-md mr-3">
+                    <div class="truncate text-base font-bold flex items-center space-x-2">
+                        <span id="track-4-icon" class="text-xs">▶</span> <p>HIGHEST IN THE ROOM</p>
+                    </div>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-400 text-sm">Single</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-gray-400">2:55</span>
+            </div>
+
+            <div id="track-5" class="track-row grid grid-cols-12 gap-4 items-center py-2 px-4 rounded-lg transition-colors cursor-pointer md:grid-cols-10" onclick="toggleAudio('track-5')">
+                <span class="col-span-1 text-sm font-medium text-gray-500">5</span>
+                <div class="col-span-4 md:col-span-3 flex items-center">
+                    <img src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84cbbecdc2ffe3ca7836da07ef" class="w-10 h-10 rounded-md mr-3">
+                    <div class="truncate text-base font-bold flex items-center space-x-2">
+                        <span id="track-5-icon" class="text-xs">▶</span> <p>MY EYES</p>
+                    </div>
+                </div>
+                <span class="col-span-4 md:col-span-4 truncate text-gray-400 text-sm">UTOPIA</span>
+                <span class="col-span-3 md:col-span-2 text-right text-sm text-gray-400">4:11</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fixed bottom-0 left-0 right-0 h-24 player-bar z-20 shadow-2xl">
+        <div class="max-w-6xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center w-1/4 min-w-[150px]">
+                <img id="mini-player-cover" src="" class="w-14 h-14 rounded-lg mr-4 shadow-lg hidden sm:block">
+                <div>
+                    <p id="mini-player-title" class="text-white font-bold text-sm truncate"></p>
+                    <p id="mini-player-artist" class="text-gray-400 text-xs"></p>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center w-1/2">
+                <div class="flex items-center space-x-6 text-gray-400 text-2xl mb-1">
+                    <button class="hover:text-white transition">⏮</button>
+                    <button onclick="toggleAudio(currentTrackId || 'track-1')" class="text-white hover:scale-110 transition-transform">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" class="text-primary-accent">
+                            <circle cx="12" cy="12" r="10" fill="#222"/>
+                            <text id="mini-play-icon-symbol" x="12" y="15.5" text-anchor="middle" font-size="10" fill="#ff3e3e" style="font-weight: 900;">▶</text>
+                        </svg>
+                    </button>
+                    <button class="hover:text-white transition">⏭</button>
+                </div>
+                
+                <div class="flex items-center w-full max-w-lg space-x-3 text-xs text-gray-500 mt-1">
+                    <span id="mini-player-current-time">0:00</span>
+                    <div class="flex-grow h-1 bg-white/10 rounded-full relative">
+                        <div id="mini-player-progress-fill" class="h-1 bg-primary-accent rounded-full neon-glow" style="width: 0%;"></div>
+                        <div id="mini-player-progress-scrubber" class="w-3 h-3 bg-white rounded-full absolute -top-1.5" style="left: 0%; transform: translateX(-50%);"></div>
+                    </div>
+                    <span id="mini-player-duration">0:00</span>
+                </div>
+            </div>
+
+            <div class="hidden sm:flex items-center space-x-4 text-gray-400 w-1/4 justify-end">
+                <span>🔊</span>
+                <div class="w-24 h-1 bg-white/10 rounded-full relative overflow-hidden">
+                    <div id="volume-fill" class="h-1 bg-primary-accent" style="width: 100%;"></div>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
