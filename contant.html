@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - 3D Modern</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+      overflow: hidden;
+    }
+
+    /* Animated background particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: float 8s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .container {
+      max-width: 500px;
+      width: 90%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transform: translateZ(0);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .container:hover {
+      transform: translateY(-10px) rotateX(5deg);
+      box-shadow: 
+        0 35px 70px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    h2 {
+      text-align: center;
+      color: #fff;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      animation: slideInDown 0.8s ease-out;
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .form-group {
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 18px 20px;
+      border: none;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      resize: vertical;
+      box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.1),
+        0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.1),
+        0 5px 20px rgba(255, 255, 255, 0.1),
+        0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    button {
+      padding: 18px 30px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 10px 30px rgba(255, 107, 107, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: translateZ(0);
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 
+        0 15px 40px rgba(255, 107, 107, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:active {
+      transform: translateY(-1px) scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .success-message {
+      background: linear-gradient(135deg, #00d4aa 0%, #00a085 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+      box-shadow: 
+        0 10px 30px rgba(0, 212, 170, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Floating elements */
+    .floating-element {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: floatAround 12s infinite ease-in-out;
+      z-index: 2;
+    }
+
+    .floating-element:nth-child(1) {
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      top: 20%;
+      right: 10%;
+      animation-delay: 4s;
+    }
+
+    .floating-element:nth-child(3) {
+      bottom: 10%;
+      left: 15%;
+      animation-delay: 8s;
+    }
+
+    @keyframes floatAround {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-20px) rotate(90deg); }
+      50% { transform: translateY(-40px) rotate(180deg); }
+      75% { transform: translateY(-20px) rotate(270deg); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 30px 25px;
+      }
+      
+      h2 {
+        font-size: 2rem;
+      }
+      
+      input, textarea, button {
+        padding: 15px;
+        font-size: 14px;
+      }
+    }
+
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-particles"></div>
+  
+  <div class="floating-element"></div>
+  <div class="floating-element"></div>
+  <div class="floating-element"></div>
+  
+  <div class="container">
+    <h2>✨ Contact Us</h2>
+    <form onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" placeholder="Tell us what's on your mind..." required></textarea>
+      </div>
+      
+      <button type="submit" id="submitBtn">
+        <span class="btn-text">Send Message</span>
+      </button>
+    </form>
+    
+    <div class="success-message" id="successMessage">
+      🎉 Message sent successfully! We'll get back to you soon.
+    </div>
+  </div>
+
+  <script>
+    // Generate background particles
+    function createParticles() {
+      const container = document.querySelector('.bg-particles');
+      const particleCount = 50;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 8 + 's';
+        particle.style.animationDuration = (Math.random() * 6 + 4) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // Form submission handler
+    function handleSubmit(event) {
+      event.preventDefault();
+      
+      const button = document.getElementById('submitBtn');
+      const buttonText = button.querySelector('.btn-text');
+      const successMessage = document.getElementById('successMessage');
+      
+      // Show loading state
+      buttonText.innerHTML = '<div class="loading"></div>';
+      button.disabled = true;
+      
+      // Simulate form submission
+      setTimeout(() => {
+        // Hide loading and show success
+        buttonText.textContent = 'Message Sent!';
+        button.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00a085 100%)';
+        
+        // Show success message
+        successMessage.style.display = 'block';
+        
+        // Reset form
+        event.target.reset();
+        
+        // Reset button after delay
+        setTimeout(() => {
+          buttonText.textContent = 'Send Message';
+          button.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
+          button.disabled = false;
+          successMessage.style.display = 'none';
+        }, 3000);
+      }, 1500);
+    }
+
+    // Add hover effects to form elements
+    document.querySelectorAll('input, textarea').forEach(element => {
+      element.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-1px) scale(1.01)';
+      });
+      
+      element.addEventListener('mouseleave', function() {
+        if (this !== document.activeElement) {
+          this.style.transform = 'translateY(0) scale(1)';
+        }
+      });
+    });
+
+    // Add 3D tilt effect to container
+    const container = document.querySelector('.container');
+    container.addEventListener('mousemove', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = (y - centerY) / 20;
+      const rotateY = (centerX - x) / 20;
+      
+      this.style.transform = `translateY(-10px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    container.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(-10px) rotateX(0deg) rotateY(0deg)';
+    });
+
+    // Initialize particles
+    createParticles();
+  </script>
+</body>
+</html>

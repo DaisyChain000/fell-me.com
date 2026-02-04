@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILMVERSE | Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ffe7;
+            --secondary: #0f2027;
+            --dark: #141414;
+            --light: #f5f5f5;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        .login-btn{
+
+            text-decoration: none;
+        }
+        
+        /* CINEMATIC LIGHT EFFECT */
+        .light-sweep {
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, 
+                        rgba(229,9,20,0.1) 0%, 
+                        transparent 70%);
+            animation: lightRotation 20s infinite linear;
+            z-index: -2;
+        }
+        
+        @keyframes lightRotation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* FILM REEL ANIMATION */
+        .film-reel {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222 40%, #000 100%);
+            border: 15px solid #333;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            z-index: -1;
+            animation: reelSpin 15s infinite linear;
+        }
+        
+        .film-reel::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background: #111;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .film-reel .sprocket {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #444;
+            border-radius: 50%;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        @keyframes reelSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .reel-left {
+            left: -150px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .reel-right {
+            right: -150px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* FILM STRIP EFFECT */
+        .film-strip {
+            position: absolute;
+            width: 100%;
+            height: 40px;
+            background: repeating-linear-gradient(
+                to right,
+                #000 0px,
+                #000 20px,
+                #333 20px,
+                #333 40px
+            );
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .strip-top {
+            top: 0;
+            animation: stripMove 20s infinite linear;
+        }
+        
+        .strip-bottom {
+            bottom: 0;
+            animation: stripMove 25s infinite linear reverse;
+        }
+        
+        @keyframes stripMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-40px); }
+        }
+        
+        /* 3D LOGIN CONTAINER */
+        .login-container {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 40px;
+            width: 380px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5),
+                        0 0 0 1px rgba(255,255,255,0.05),
+                        0 0 30px var(--primary);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 45%,
+                rgba(229,9,20,0.1) 50%,
+                transparent 55%
+            );
+            animation: shine 3s infinite;
+            z-index: -1;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(0deg) translateY(-100px); }
+            100% { transform: rotate(0deg) translateY(100px); }
+        }
+        
+        .logo {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary),
+                         0 0 20px rgba(229,9,20,0.5);
+            letter-spacing: 2px;
+            position: relative;
+        }
+        
+        .logo::after {
+            content: "";
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), transparent);
+            margin: 10px auto;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(229,9,20,0.3);
+        }
+        
+        .input-group label {
+            position: absolute;
+            left: 20px;
+            top: 15px;
+            color: rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: -10px;
+            left: 10px;
+            font-size: 0.8rem;
+            background: var(--dark);
+            padding: 0 5px;
+            color: var(--primary);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(229,9,20,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 45%,
+                rgba(255,255,255,0.3) 50%,
+                transparent 55%
+            );
+            animation: shine 2s infinite;
+            transform: rotate(30deg);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(229,9,20,0.6);
+        }
+        
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .login-btn a{
+            text-decoration: none;
+        }
+        
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .google-btn {
+            background: #DB4437;
+            box-shadow: 0 4px 10px rgba(219, 68, 55, 0.4);
+        }
+        
+        .facebook-btn {
+            background: #1877F2;
+            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.4);
+        }
+        
+        .apple-btn {
+            background: #000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .social-btn i {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        /* FLOATING POPCORN */
+        .popcorn {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23FFD700" d="M50 15L20 50L35 85L65 85L80 50Z"/></svg>');
+            background-size: contain;
+            z-index: -1;
+            animation: floatPopcorn 15s infinite linear;
+            opacity: 0.7;
+        }
+        
+        @keyframes floatPopcorn {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50vw, -30vh) rotate(90deg); }
+            50% { transform: translate(100vw, 0vh) rotate(180deg); }
+            75% { transform: translate(50vw, 30vh) rotate(270deg); }
+            100% { transform: translate(0vw, 0vh) rotate(360deg); }
+        }
+        .join-btn {
+            background: linear-gradient(90deg, #00ffe7 0%, #e50914 100%);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 22px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,255,231,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .join-btn a {
+            color: white;
+            text-decoration: none;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .join-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px #00ffe7;
+        }
+        
+        .join-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .join-btn:hover::before {
+            opacity: 1;
+        }
+        .bg-slideup {
+	perspective: 1000px;
+	animation: bg3dslide 8s infinite linear alternate;
+}
+
+@keyframes bg3dslide {
+	0% {
+		transform: rotateY(0deg) scale(1) translateZ(0);
+		box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+	}
+	25% {
+		transform: rotateY(10deg) scale(1.03) translateZ(20px);
+		box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+	}
+	50% {
+		transform: rotateY(-10deg) scale(1.05) translateZ(40px);
+		box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+	}
+	75% {
+		transform: rotateY(10deg) scale(1.03) translateZ(20px);
+		box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+	}
+	100% {
+		transform: rotateY(0deg) scale(1) translateZ(0);
+		box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+	}
+}
+    </style>
+</head>
+<body>
+    
+    <div class="light-sweep"></div>
+    <section>
+    <div class="bg-slideup"><img src="images/tv-banshee-breaking-bad-vikings-wallpaper-preview.jpg" alt=""></div>
+    </section>
+    
+    
+    <!-- Film Reels -->
+    <div class="film-reel reel-left">
+        <div class="sprocket"></div>
+        <div class="sprocket" style="transform: rotate(72deg) translateY(-135px) rotate(-72deg);"></div>
+        <div class="sprocket" style="transform: rotate(144deg) translateY(-135px) rotate(-144deg);"></div>
+        <div class="sprocket" style="transform: rotate(216deg) translateY(-135px) rotate(-216deg);"></div>
+        <div class="sprocket" style="transform: rotate(288deg) translateY(-135px) rotate(-288deg);"></div>
+    </div>
+    
+    <div class="film-reel reel-right">
+        <div class="sprocket"></div>
+        
+        <div class="sprocket" style="transform: rotate(72deg) translateY(-135px) rotate(-72deg);"></div>
+        <div class="sprocket" style="transform: rotate(144deg) translateY(-135px) rotate(-144deg);"></div>
+        <div class="sprocket" style="transform: rotate(216deg) translateY(-135px) rotate(-216deg);"></div>
+        <div class="sprocket" style="transform: rotate(288deg) translateY(-135px) rotate(-288deg);"></div>
+    </div>
+    
+    <!-- Film Strips -->
+    <div class="film-strip strip-top"></div>
+    <div class="film-strip strip-bottom"></div>
+    
+    <!-- Floating Popcorn -->
+    <div class="popcorn" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+    <div class="popcorn" style="left: 30%; top: 70%; animation-delay: -5s;"></div>
+    <div class="popcorn" style="left: 70%; top: 30%; animation-delay: -10s;"></div>
+    <div class="popcorn" style="left: 90%; top: 80%; animation-delay: -15s;"></div>
+    
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="logo">JHR</div>
+        
+        <div class="input-group">
+            <input type="text" id="email" placeholder=" " required>
+            <label for="email">Email</label>
+        </div>
+        
+        <div class="input-group">
+            <input type="password" id="password" placeholder=" " required>
+            <label for="password">Password</label>
+        </div>
+        
+        <button class="login-btn"><a href="index.html" id="btn" >SIGN IN </a></button></button>
+        
+        <div class="social-login">
+            <button class="social-btn google-btn">
+                <a href="https://accounts.google.com/signin" target="_blank">
+                    <i class="fab fa-google"></i>
+                </a>
+            </button>
+            <button class="social-btn facebook-btn">
+                <a href="https://www.facebook.com/login" target="_blank">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </button>
+            <button class="social-btn apple-btn">
+                <a href="https://appleid.apple.com/sign-in" target="_blank">
+                    <i class="fab fa-apple"></i>
+                </a>
+            </button>
+        </div>
+        
+        
+        <div class="footer">
+            Create JHR Movie Account? 
+            <button class="join-btn">
+                <a href="play1.html">Join Now</a>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Interactive 3D Tilt Effect
+        const container = document.querySelector('.login-container');
+        
+        container.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 20;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 20;
+            container.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        
+        container.addEventListener('mouseenter', () => {
+            container.style.transition = 'none';
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            container.style.transition = 'transform 0.5s ease';
+            container.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
+        
+        // Generate more popcorn
+        for (let i = 0; i < 8; i++) {
+            const popcorn = document.createElement('div');
+            popcorn.classList.add('popcorn');
+            popcorn.style.left = `${Math.random() * 100}%`;
+            popcorn.style.top = `${Math.random() * 100}%`;
+            popcorn.style.animationDuration = `${Math.random() * 10 + 10}s`;
+            popcorn.style.animationDelay = `${Math.random() * 10}s`;
+            popcorn.style.opacity = Math.random() * 0.5 + 0.3;
+            popcorn.style.width = `${Math.random() * 20 + 15}px`;
+            popcorn.style.height = popcorn.style.width;
+            document.body.appendChild(popcorn);
+        }
+    </script>
+</body>
+</html>
